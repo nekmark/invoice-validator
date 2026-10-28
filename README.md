@@ -50,10 +50,14 @@ scripts/start_app.sh                     # opens http://127.0.0.1:8501
 ```
 
 On first run choose an app password. Then open the **📟 On-call** tab and
-import September, go to **✨ Validate** and press *Validate all invoices*.
-You'll see one invoice that passes exactly, one that is a few euros short
-(accepted), one issued on the wrong day, one that overcharges, two billed in
-USD, one with an on-call extra and one file that still needs naming.
+import June and September, go to **✨ Validate** and press *Validate all
+invoices*. The demo covers March to September 2026 for four contractors:
+most months pass, and scattered through them are an invoice a few euros
+short (accepted with a note), two issued on the wrong day, a contract raise
+the contractor forgot to invoice, an overcharge, USD invoices at the real
+ECB rate with one 10 USD short, two months with on-call extras, a wrong
+invoice followed by a corrected version, and one file that still needs
+naming. Enough for the History and Report tabs to have something to say.
 
 Optional, for scanned PDFs: `brew install tesseract poppler` (macOS). Without
 them, image-only PDFs are flagged Manual Review instead of being OCR'd.
