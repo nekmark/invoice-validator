@@ -41,7 +41,7 @@ def suggest_contractor(stem: str, known_names: list[str]) -> str:
             return name
     lead = re.split(r"\d", stem, maxsplit=1)[0]
     lead = re.sub(r"[_\-.]+", " ", lead)
-    lead = re.sub(r"(?i)\b(invoice|faktura|inv|fv)\b", " ", lead).strip()
+    lead = re.sub(r"(?i)\b(invoice|factura|inv|fv)\b", " ", lead).strip()
     return " ".join(w if any(c.isupper() for c in w) else w.capitalize() for w in lead.split())
 
 
@@ -75,28 +75,18 @@ def rename_to_convention(pdf_path: Path, contractor: str, month: str) -> Path:
     return target
 
 
-# Czech alphabet order: letters with a háček (č ř š ž) are separate letters
-# that sort right after their base letter; other accents (á, é, í, ...) sort
-# with the plain letter.
-_HACEK = "̌"
-
-
-def _czech_key(text: str):
-    key = []
-    for ch in unicodedata.normalize("NFD", text.lower()):
-        if unicodedata.combining(ch):
-            if ch == _HACEK and key:
-                key[-1] = (key[-1][0], 1)
-            continue
-        key.append((ch, 0))
-    return key
+# Sorting ignores accents and case ("Sánchez" sorts with "Sanchez"), so the
+# order is the same whether or not a PDF's text layer kept the diacritics.
+def _sort_key(text: str) -> str:
+    return "".join(ch for ch in unicodedata.normalize("NFD", (text or "").lower())
+                   if not unicodedata.combining(ch))
 
 
 def surname_sort_key(name: str):
-    """Sort key: surname (last word), then the full name, in Czech order."""
+    """Sort key: surname (last word), then the full name, ignoring accents and case."""
     parts = (name or "").split()
     surname = parts[-1] if parts else ""
-    return (_czech_key(surname), _czech_key(name or ""))
+    return (_sort_key(surname), _sort_key(name or ""))
 
 
 def display_name(name: str) -> str:

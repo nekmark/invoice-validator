@@ -127,7 +127,7 @@ invoices/*.pdf ──► pipeline/extraction.py ──► pipeline/validate.py �
 Extraction is keyword/regex based and deliberately conservative: when a
 field can't be found under an unambiguous label, or candidates conflict, the
 invoice goes to Manual Review rather than being guessed. Labels are
-recognised in English and Czech (e.g. *Date of issue* / *Datum vystavení*),
+recognised in English and Spanish (e.g. *Date of issue* / *Fecha de emisión*),
 and amounts in both `4,000.00` and `4 000,00` styles. Contractor names are
 matched ignoring accents, case and word order, stored as in the file name
 and displayed surname-first.

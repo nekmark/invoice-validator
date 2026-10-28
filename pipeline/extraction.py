@@ -19,8 +19,8 @@ from dateutil import parser as dateparser
 
 def normalize(text: str) -> str:
     """Lowercase + strip diacritics, so keyword matching is robust whether a
-    PDF's text layer (or OCR) renders accented Czech characters correctly or
-    not (e.g. 'vystavení'/'vystaveni' both match)."""
+    PDF's text layer (or OCR) renders accented characters correctly or
+    not (e.g. 'emisión'/'emision' both match)."""
     text = text.lower()
     text = unicodedata.normalize("NFKD", text)
     return "".join(c for c in text if not unicodedata.combining(c))
@@ -65,43 +65,45 @@ MONTH_NAME_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Keyword lists are bilingual (English + Czech) since contractors invoice
-# in both — confirmed against a real Fakturoid-generated Czech invoice,
-# which uses "Datum vystaveni", "Sumar"/"Celkem", "Faktura", etc. instead of
-# the English equivalents.
-ONCALL_KEYWORDS = ("on call", "on-call", "oncall", "pohotovost")
+# Keyword lists are bilingual (English + Spanish) since contractors invoice
+# in both; Spanish layouts use "Fecha de emisión", "Importe"/"Total",
+# "Factura", etc. instead of the English equivalents.
+ONCALL_KEYWORDS = ("on call", "on-call", "oncall", "guardia")
 TOTAL_KEYWORDS = (
     "grand total", "total due", "amount due", "balance due", "total compensation",
     "monthly compensation", "amount payable", "invoice total", "subtotal", "total",
-    "sumar", "celkem", "soucet", "k uhrade", "castka k uhrade", "celkova castka",
-    "amounts",  # Fakturoid English layout labels its total line this way
+    "importe total", "total a pagar", "importe", "suma",
+    "amounts",  # some hosted invoicing tools label their total line this way
 )
 EUR_CURRENCY_KEYWORDS = ("eur", "€")
 USD_CURRENCY_KEYWORDS = ("usd", "us$", "$")
 # Ordered longest/most specific first. "issue:" covers layouts where "Date of"
 # and "issue: <date>" land on separate text lines. Deliberately NOT included:
-# "date of taxable supply"/"duzp" (a different date) and bare "date".
-ISSUE_DATE_KEYWORDS = ("date of issue", "issue date", "issued on", "invoice date", "datum vystaveni", "issue:")
-DUE_DATE_KEYWORDS = ("due date", "payment due", "due on", "due by", "datum splatnosti")
-PAYMENT_DATE_KEYWORDS = ("payment date", "date paid", "datum uhrady", "datum platby")
-# Date of taxable supply (Czech DUZP). When present, Rule B checks this date
+# "date of taxable supply"/"fecha de devengo" (a different date) and bare "date".
+ISSUE_DATE_KEYWORDS = ("date of issue", "issue date", "issued on", "invoice date",
+                       "fecha de emision", "fecha de expedicion", "fecha factura", "issue:")
+DUE_DATE_KEYWORDS = ("due date", "payment due", "due on", "due by", "fecha de vencimiento", "vencimiento")
+PAYMENT_DATE_KEYWORDS = ("payment date", "date paid", "fecha de pago")
+# Date of taxable supply (Spanish "fecha de devengo"/"fecha de operación").
+# When present, Rule B checks this date
 # rather than the issue date. "date of taxable" also covers variants like
 # "Date of taxable transaction".
 TAXABLE_SUPPLY_KEYWORDS = (
-    "datum uskutecneni zdanitelneho plneni", "datum zdanitelneho plneni", "date of taxable supply",
-    "taxable supply date", "date of taxable", "duzp",
+    "fecha del hecho imponible", "fecha de devengo", "fecha de operacion", "date of taxable supply",
+    "taxable supply date", "date of taxable",
 )
-INVOICE_NUMBER_KEYWORDS = ("invoice number", "invoice no", "invoice #", "inv no", "faktura", "faktura c", "faktura cislo")
+INVOICE_NUMBER_KEYWORDS = ("invoice number", "invoice no", "invoice #", "inv no",
+                           "numero de factura", "factura numero", "factura num", "factura no", "factura n", "factura")
 SERVICE_PERIOD_KEYWORDS = (
     "service period", "for the month of", "billing period", "service month", "period",
-    "fakturacni obdobi", "obdobi",
+    "periodo de facturacion", "periodo",
 )
 
 MIN_TEXT_LENGTH_BEFORE_OCR = 20
 
 # Matches a date-shaped substring directly, rather than fuzzy-parsing an
 # entire line — PDF column layouts often get flattened into one text line
-# (e.g. "Bank Account 2531037063/0800 Issue Date 08. 06. 2026"), and
+# (e.g. "Bank Account 1234567890 Issue Date 08. 06. 2026"), and
 # dateutil's fuzzy parser can choke entirely on the surrounding noise (an
 # account number) even though the date itself is unambiguous.
 _MONTH_NAME = (
@@ -110,7 +112,7 @@ _MONTH_NAME = (
 )
 DATE_PATTERN = re.compile(
     r"\d{4}-\d{1,2}-\d{1,2}"           # ISO: 2026-06-08
-    r"|\d{1,2}\.\s*\d{1,2}\.\s*\d{2,4}"  # Czech/European: 08. 06. 2026
+    r"|\d{1,2}\.\s*\d{1,2}\.\s*\d{2,4}"  # European: 08. 06. 2026
     r"|\d{1,2}/\d{1,2}/\d{2,4}"         # 08/06/2026
     r"|\b" + _MONTH_NAME + r"\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}"      # Sep 30, 2026
     r"|\b\d{1,2}(?:st|nd|rd|th)?\.?\s+" + _MONTH_NAME + r"\.?,?\s+\d{4}",  # 1st October 2026
@@ -278,17 +280,17 @@ def _strip_accents_keep_case(text: str) -> str:
 # "Invoice" are never taken.
 _INVOICE_ID = r"([A-Za-z0-9][\w\-/.]*[A-Za-z0-9]|[A-Za-z0-9])"
 _INVOICE_LABEL_RE = re.compile(
-    r"\b(?:invoice\s*(?:number|no\.?|nr\.?|#)?|faktura(?:\s*c(?:islo)?\.?)?|cislo\s+faktury|inv\.?\s*no\.?)"
+    r"\b(?:invoice\s*(?:number|no\.?|nr\.?|#)?|factura(?:\s*(?:numero|num|no|n)\.?)?|numero\s+de\s+factura|inv\.?\s*no\.?)"
     r"\s*[:#]?\s*" + _INVOICE_ID + r"(?=\s|$)",
     re.IGNORECASE,
 )
-_HEADER_LABEL_RE = re.compile(r"\b(invoice\s*(number|no\.?)|cislo\s+faktury)\b", re.IGNORECASE)
+_HEADER_LABEL_RE = re.compile(r"\b(invoice\s*(number|no\.?)|numero\s+de\s+factura)\b", re.IGNORECASE)
 _LINE_START_ID_RE = re.compile(r"^\s*" + _INVOICE_ID + r"(?=\s|$)")
 
 
 def find_invoice_number(lines):
     """Returns (invoice_number, snippet). Handles 'Invoice 2026-0009',
-    'Invoice no.: FV123', 'Faktura 2026009', and header layouts where the
+    'Invoice no.: FV123', 'Factura 2026009', and header layouts where the
     label row ('Invoice number  Issue date') has the value on a line below."""
     for i, line in enumerate(lines):
         plain = _strip_accents_keep_case(line)

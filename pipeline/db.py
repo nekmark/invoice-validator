@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     issue_date_snippet TEXT,
     due_date TEXT,
     payment_date TEXT,
-    taxable_supply_date TEXT,       -- 'YYYY-MM-DD' (Czech DUZP); when present, Rule B checks this
+    taxable_supply_date TEXT,       -- 'YYYY-MM-DD' (date of taxable supply); when present, Rule B checks this
     taxable_supply_confidence TEXT,
     taxable_supply_snippet TEXT,
     currency TEXT,
@@ -153,7 +153,7 @@ def _name_key(name: str) -> str:
     'Emile Dupont' or 'Dupont Émile' typed in the Contracts tab and
     'Émile Dupont' from an invoice filename are recognised as the same person."""
     decomposed = unicodedata.normalize("NFKD", name.lower())
-    # Word order ignored too: Czech often writes surname first ("Lindqvist Zoë").
+    # Word order ignored too: some invoices write the surname first ("Lindqvist Zoë").
     return " ".join(sorted("".join(c for c in decomposed if not unicodedata.combining(c)).split()))
 
 

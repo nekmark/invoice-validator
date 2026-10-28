@@ -53,12 +53,12 @@ def run(tmp_path, monkeypatch):
     return _run
 
 
-FAKTUROID_EN = [
+HOSTED_TOOL_EN = [
     "Invoice 2026-0009",
     "SUPPLIER CUSTOMER",
     "Ana Pereira Example Corp",
     "Bank account 1234567890/0800 Issued on Sep 30, 2026",
-    "IBAN CZ0000000000 Due on Oct 14, 2026",
+    "IBAN ES0000000000 Due on Oct 14, 2026",
     "Reference 20260009",
     "Software development $ 4,340.00",
     "Amounts $ 4,340.00T",
@@ -67,8 +67,8 @@ FAKTUROID_EN = [
 ]
 
 
-def test_fakturoid_english_layout(run):
-    result, row = run(FAKTUROID_EN)
+def test_hosted_tool_english_layout(run):
+    result, row = run(HOSTED_TOOL_EN)
     assert result["status"] == "Pass", result["warnings"]
     assert row["invoice_number"] == "2026-0009"
     assert row["issue_date"] == "2026-09-30"
@@ -77,16 +77,16 @@ def test_fakturoid_english_layout(run):
     assert row["due_date"] == "2026-10-14"
 
 
-def test_czech_layout(run):
+def test_spanish_layout(run):
     result, row = run([
-        "Faktura 2026009",
-        "DODAVATEL ODBERATEL",
-        "Bankovni ucet 1234567890/0800 Datum vystaveni 30. 09. 2026",
-        "IBAN CZ0000 Datum splatnosti 14. 10. 2026",
-        "Software development $ 4 340,00",
-        "Celkem $ 4 340,00",
+        "Factura 2026009",
+        "EMISOR CLIENTE",
+        "Cuenta bancaria 1234567890/0800 Fecha de emision 30. 09. 2026",
+        "IBAN ES0000 Fecha de vencimiento 14. 10. 2026",
+        "Desarrollo de software $ 4 340,00",
+        "Total $ 4 340,00",
         "4 000,00 EUR",
-        "(kurz 1,0850 USD / 1 EUR)",
+        "(tipo de cambio 1,0850 USD / 1 EUR)",
     ])
     assert result["status"] == "Pass", result["warnings"]
     assert row["invoice_number"] == "2026009"
@@ -141,7 +141,7 @@ def test_issued_next_month_without_taxable_supply_warns(run):
 
 
 def test_taxable_supply_not_last_day_warns(run):
-    lines = INVOICE_DATE_LAYOUT[:5] + ["DUZP: 29.09.2026"] + INVOICE_DATE_LAYOUT[5:]
+    lines = INVOICE_DATE_LAYOUT[:5] + ["Fecha de devengo: 29.09.2026"] + INVOICE_DATE_LAYOUT[5:]
     result, _ = run(lines)
     assert result["status"] == "Warning"
     assert any("Date of taxable supply 2026-09-29" in w for w in result["warnings"])
@@ -181,7 +181,7 @@ def test_whole_number_total_and_wrapped_supply_date(run):
 
 def test_difference_within_5_eur_passes_with_note(run):
     # 4,337.00 USD is 3 USD (~2.76 EUR) below the contract
-    lines = [l.replace("4,340.00", "4,337.00").replace("4,000.00", "3,997.24") for l in FAKTUROID_EN]
+    lines = [l.replace("4,340.00", "4,337.00").replace("4,000.00", "3,997.24") for l in HOSTED_TOOL_EN]
     result, _ = run(lines)
     assert result["status"] == "Pass", result["warnings"]
     assert any(w.startswith("Note:") for w in result["warnings"])
@@ -189,7 +189,7 @@ def test_difference_within_5_eur_passes_with_note(run):
 
 def test_difference_over_5_eur_warns(run):
     # 4,330.00 USD is 10 USD (~9.22 EUR) below the contract
-    lines = [l.replace("4,340.00", "4,330.00").replace("4,000.00", "3,990.78") for l in FAKTUROID_EN]
+    lines = [l.replace("4,340.00", "4,330.00").replace("4,000.00", "3,990.78") for l in HOSTED_TOOL_EN]
     result, _ = run(lines)
     assert result["status"] == "Warning"
     assert not any(w.startswith("Note:") for w in result["warnings"])
@@ -197,7 +197,7 @@ def test_difference_over_5_eur_warns(run):
 
 def test_standing_adjustment(run):
     # Contract is 98.86 EUR higher than what the invoice always shows
-    result, row = run(FAKTUROID_EN, amount=CONTRACT_EUR + 98.86, adjustment=-98.86)
+    result, row = run(HOSTED_TOOL_EN, amount=CONTRACT_EUR + 98.86, adjustment=-98.86)
     assert result["status"] == "Pass", result["warnings"]
     assert row["expected_eur"] == CONTRACT_EUR
 
@@ -205,14 +205,14 @@ def test_standing_adjustment(run):
 def test_no_contract_term_is_manual_review(tmp_path, monkeypatch):
     monkeypatch.setattr(fx, "get_rate_for_month", lambda y, m: FAKE_FX)
     pdf = tmp_path / "Nobody Example_2026-09.pdf"
-    _pdf(pdf, FAKTUROID_EN)
+    _pdf(pdf, HOSTED_TOOL_EN)
     result = process.process_invoice_file(pdf)
     assert result["status"] == "Manual Review"
     assert any("No contract term" in w for w in result["warnings"])
 
 
 def test_revalidation_is_stable(run, tmp_path):
-    first, _ = run(FAKTUROID_EN)
+    first, _ = run(HOSTED_TOOL_EN)
     second = process.process_invoice_file(tmp_path / "Ana Pereira_2026-09.pdf")
     assert second["status"] == first["status"] == "Pass"
     assert second["invoice_id"] == first["invoice_id"]
@@ -227,13 +227,13 @@ def test_fx_unavailable_is_unable_to_verify(tmp_path, monkeypatch):
     cid = db.upsert_contractor("Ana Pereira")
     db.add_contract_term(cid, CONTRACT_EUR, "2026-09", None)
     pdf = tmp_path / "Ana Pereira_2026-09.pdf"
-    _pdf(pdf, FAKTUROID_EN)
+    _pdf(pdf, HOSTED_TOOL_EN)
     assert process.process_invoice_file(pdf)["status"] == "Unable to Verify"
 
 
 def test_overpayment_within_5_eur_warns(run):
     # 4,343.00 USD is 3 USD (~2.76 EUR) ABOVE the contract: only underpayments are accepted
-    lines = [l.replace("4,340.00", "4,343.00").replace("4,000.00", "4,002.76") for l in FAKTUROID_EN]
+    lines = [l.replace("4,340.00", "4,343.00").replace("4,000.00", "4,002.76") for l in HOSTED_TOOL_EN]
     result, _ = run(lines)
     assert result["status"] == "Warning"
     assert not any(w.startswith("Note:") for w in result["warnings"])

@@ -260,7 +260,7 @@ def test_usd_only_invoice_checked_via_usd(monkeypatch, contractor_id):
 
 
 def _supply(date):
-    return dict(taxable_supply_date=date, taxable_supply_confidence="high", taxable_supply_snippet="DUZP")
+    return dict(taxable_supply_date=date, taxable_supply_confidence="high", taxable_supply_snippet="Fecha de devengo")
 
 
 def test_taxable_supply_on_last_day_passes_even_if_issued_next_month(monkeypatch, contractor_id):

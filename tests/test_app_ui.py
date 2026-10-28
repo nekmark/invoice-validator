@@ -399,21 +399,21 @@ def test_dashboard_and_lists_sort_by_surname(app_dir, monkeypatch):
             c.drawString(40, 800 - 18 * i, line)
         c.save()
 
-    for i, name in enumerate(["Zoe Abbott", "Adam Žitko", "Iva Čapková", "Jan Cerny"]):
+    for i, name in enumerate(["Zoe Abbott", "Adam Walker", "Olivia Carter", "Jack Brooks"]):
         fake_invoice(f"{name}_2026-01.pdf", f"T-{i}")
-    fake_invoice("Iva Čapková_2026-02.pdf", "T-9")
+    fake_invoice("Olivia Carter_2026-02.pdf", "T-9")
     at = _app(app_dir)
     _button(at, "Validate all invoices").click().run()
     table = _results(at)
-    assert list(table["Contractor"]) == ["Abbott Zoe", "Cerny Jan", "Čapková Iva", "Čapková Iva", "Žitko Adam"]
-    assert list(table[table["Contractor"] == "Čapková Iva"]["Service Month"]) == ["2026-02", "2026-01"]
+    assert list(table["Contractor"]) == ["Abbott Zoe", "Brooks Jack", "Carter Olivia", "Carter Olivia", "Walker Adam"]
+    assert list(table[table["Contractor"] == "Carter Olivia"]["Service Month"]) == ["2026-02", "2026-01"]
 
     next(s for s in at.selectbox if s.label == "Sort").set_value("Surname Z–A").run()
-    assert list(_results(at)["Contractor"]) == ["Žitko Adam", "Čapková Iva", "Čapková Iva", "Cerny Jan", "Abbott Zoe"]
+    assert list(_results(at)["Contractor"]) == ["Walker Adam", "Carter Olivia", "Carter Olivia", "Brooks Jack", "Abbott Zoe"]
 
     filter_box = next(s for s in at.selectbox if s.label == "Contractor")
-    assert filter_box.options == ["All", "Abbott Zoe", "Cerny Jan", "Čapková Iva", "Žitko Adam"]
-    assert at.selectbox(key="contracts_selected").options == ["Abbott Zoe", "Cerny Jan", "Čapková Iva", "Žitko Adam"]
+    assert filter_box.options == ["All", "Abbott Zoe", "Brooks Jack", "Carter Olivia", "Walker Adam"]
+    assert at.selectbox(key="contracts_selected").options == ["Abbott Zoe", "Brooks Jack", "Carter Olivia", "Walker Adam"]
 
 
 

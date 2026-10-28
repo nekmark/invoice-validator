@@ -81,17 +81,17 @@ def test_surname_first_maps_to_existing_contractor():
     assert db.upsert_contractor("Zoe Lindqvist") == cid
 
 
-def test_surname_sort_follows_czech_alphabet():
-    names = ["Eva Novák", "Iva Čapková", "Jan Cerny", "Ota Šťastná", "Pavel Svoboda",
-             "Adam Žitko", "Ema Zeman", "Ivo Řezník", "Lea Růžička", "Zoe Abbott"]
+def test_surname_sort_ignores_accents_and_case():
+    names = ["Emily Nolan", "Olivia Carter", "Jack Brooks", "Ava Sánchez", "Noah Sullivan",
+             "Adam Walker", "Emma Young", "Ryan Reyes", "Lea Rivera", "Zoe Abbott", "liam sanders"]
     ordered = sorted(names, key=naming.surname_sort_key)
     assert [n.split()[-1] for n in ordered] == [
-        "Abbott", "Cerny", "Čapková", "Novák", "Růžička", "Řezník", "Svoboda", "Šťastná", "Zeman", "Žitko",
+        "Abbott", "Brooks", "Carter", "Nolan", "Reyes", "Rivera", "Sánchez", "sanders", "Sullivan", "Walker", "Young",
     ]
 
 
 def test_surname_sort_ties_broken_by_first_name():
-    assert sorted(["Petra Nová", "Anna Nová"], key=naming.surname_sort_key) == ["Anna Nová", "Petra Nová"]
+    assert sorted(["Grace Miller", "Anna Miller"], key=naming.surname_sort_key) == ["Anna Miller", "Grace Miller"]
 
 
 

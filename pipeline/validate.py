@@ -179,7 +179,7 @@ def validate_invoice(fields: dict, contractor_id: int) -> dict:
         elif outcome:
             warnings.append(outcome)
 
-    # Rule B: the date of taxable supply (DUZP), when the invoice states one,
+    # Rule B: the date of taxable supply, when the invoice states one,
     # must be the last calendar day of the invoiced month. Invoices without
     # that date fall back to checking the issue date instead.
     expected_last_day = None
