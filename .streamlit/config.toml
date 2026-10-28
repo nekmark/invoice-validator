@@ -1,0 +1,17 @@
+[browser]
+gatherUsageStats = false
+
+[server]
+address = "127.0.0.1"
+enableXsrfProtection = true
+
+[client]
+toolbarMode = "minimal"  # hides the Streamlit Cloud "Deploy" button
+
+[theme]
+base = "light"
+primaryColor = "#7a1f3d"
+backgroundColor = "#faf7f5"
+secondaryBackgroundColor = "#f3ebe9"
+textColor = "#2b1a1e"
+font = "sans serif"

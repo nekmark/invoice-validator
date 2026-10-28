@@ -1,0 +1,22 @@
+# Confidential data — never commit any of this
+invoices/
+data/
+exports/
+oncall/
+*.xlsx
+secrets.local.json
+*.pdf
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+# Synthetic test invoices are fake data and are needed by the tests
+!tests/fixtures/*.pdf
+
+# Environment / local tooling
+venv/
+venv-*/
+__pycache__/
+*.pyc
+.DS_Store
+.pytest_cache/
