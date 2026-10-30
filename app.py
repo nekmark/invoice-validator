@@ -519,7 +519,9 @@ with tab_history:
         )
 
         st.markdown("#### One contractor 🔎")
-        who_h = st.selectbox("Contractor", h_contractors, format_func=view.who, key="history_contractor")
+        # The key changes with privacy mode: Streamlit keeps a keyed selectbox's displayed label across
+        # reruns, so without this the real name would stay visible after switching privacy on.
+        who_h = st.selectbox("Contractor", h_contractors, format_func=view.who, key=f"history_contractor_{view.private}")
         entries = history.contractor_history(hist_rows, who_h)
         st.dataframe(
             pd.DataFrame(
@@ -638,7 +640,7 @@ with tab_report:
 
         st.markdown("#### Per invoice 🧾")
         rep_names = [c["contractor"] for c in rep_contractors]
-        who_r = st.selectbox("Show", ["Everyone", *rep_names], key="report_contractor",
+        who_r = st.selectbox("Show", ["Everyone", *rep_names], key=f"report_contractor_{view.private}",
                              format_func=lambda n: n if n == "Everyone" else view.who(n))
         shown = [i for i in rep_invoices if who_r == "Everyone" or i["contractor"] == who_r]
 
