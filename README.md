@@ -8,6 +8,39 @@ spelled out. Built with Streamlit and SQLite; runs entirely on your machine.
 > 🎭 Everything in this repository is fictional demo data. Nothing here is a real
 > contractor, contract or invoice.
 
+## 📸 Screenshots
+
+All taken with the **🙈 Privacy** switch on, the mode meant for screen
+sharing: contractors become *Contractor A, B, C…*, amounts turn into `•••••`,
+and the data behind them is the fictional demo set.
+
+**📊 Dashboard** — one tile per status, filters, and every invoice with what
+was read and what was expected.
+
+![Dashboard tab in privacy mode](docs/screenshots/dashboard.png)
+
+**🗓️ History** — everyone month by month, then one contractor in detail.
+
+![History tab in privacy mode](docs/screenshots/history.png)
+
+**📋 Report** — who got it right first time, and how many corrected versions
+had to be sent.
+
+![Report tab in privacy mode](docs/screenshots/report.png)
+
+**📟 On-call** — import the attendance sheet for the months you are checking.
+
+![On-call tab in privacy mode](docs/screenshots/oncall.png)
+
+<details>
+<summary>Two more: ✨ Validate and 📑 Contracts</summary>
+
+![Validate tab in privacy mode](docs/screenshots/validate.png)
+
+![Contracts tab in privacy mode](docs/screenshots/contracts.png)
+
+</details>
+
 ## 🔍 What it checks
 
 - 💶 **Rule A — amount.** The invoiced total equals the contracted monthly
