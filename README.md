@@ -1,45 +1,45 @@
-# Invoice Validator
+# 🧾 Invoice Validator
 
 A small, local-only web app that checks contractor invoices against their
 contracts, month by month. Drop the PDFs into a folder, press **Validate**,
 and get a Pass / Warning / Manual Review verdict per invoice with the reason
 spelled out. Built with Streamlit and SQLite; runs entirely on your machine.
 
-> Everything in this repository is fictional demo data. Nothing here is a real
+> 🎭 Everything in this repository is fictional demo data. Nothing here is a real
 > contractor, contract or invoice.
 
-## What it checks
+## 🔍 What it checks
 
-- **Rule A — amount.** The invoiced total equals the contracted monthly
+- 💶 **Rule A — amount.** The invoiced total equals the contracted monthly
   amount in EUR for that month. Contract terms are effective-dated, so a
   raise in March is handled correctly. A term can carry a *standing
   adjustment* for a known, fixed difference.
-- **Rule B — date.** The date of taxable supply, when the invoice states one,
+- 📅 **Rule B — date.** The date of taxable supply, when the invoice states one,
   is the last calendar day of the invoiced month. Invoices without that date
   are checked on their issue date instead.
-- **Rule C — currency.** When the invoice is billed in USD, the USD total
+- 💱 **Rule C — currency.** When the invoice is billed in USD, the USD total
   equals the EUR amount converted at the European Central Bank reference
   rate for the last day of the month.
-- **Rule D — on-call extra.** If you import an on-call attendance sheet,
+- 📟 **Rule D — on-call extra.** If you import an on-call attendance sheet,
   the expected total becomes contract + on-call extra: hourly rate (contract
   ÷ 20 days ÷ 8 hours) × hours × a multiplier per kind of hour (standby,
   standby on a holiday, active work in the evening, after 10 pm, on a holiday).
 
-**Accepted underpayment:** an invoice up to **5 EUR below** the contract is
+🤏 **Accepted underpayment:** an invoice up to **5 EUR below** the contract is
 not treated as a mistake; it passes with a note showing the gap. Anything
 *above* the contract beyond cent rounding is a Warning. The limit is
 `ACCEPTABLE_DIFFERENCE_EUR` in `pipeline/validate.py`.
 
-### Statuses
+### 🚦 Statuses
 
 | Status | Meaning |
 |---|---|
-| **Pass** | every applicable check passed |
-| **Warning** | a real discrepancy: amount, date or currency |
-| **Manual Review** | something couldn't be read or decided reliably (no contract term, ambiguous dates, an On Call amount that can't be separated, a duplicate invoice number, …) |
-| **Unable to Verify** | the ECB rate couldn't be fetched or didn't pass its sanity check; the app never guesses a rate |
+| ✅ **Pass** | every applicable check passed |
+| ⚠️ **Warning** | a real discrepancy: amount, date or currency |
+| 👀 **Manual Review** | something couldn't be read or decided reliably (no contract term, ambiguous dates, an On Call amount that can't be separated, a duplicate invoice number, …) |
+| 🤷 **Unable to Verify** | the ECB rate couldn't be fetched or didn't pass its sanity check; the app never guesses a rate |
 
-## Try it with demo data
+## 🎲 Try it with demo data
 
 ```bash
 git clone <this repo> invoice-validator && cd invoice-validator
@@ -59,10 +59,10 @@ ECB rate with one 10 USD short, two months with on-call extras, a wrong
 invoice followed by a corrected version, and one file that still needs
 naming. Enough for the History and Report tabs to have something to say.
 
-Optional, for scanned PDFs: `brew install tesseract poppler` (macOS). Without
+🖨️ Optional, for scanned PDFs: `brew install tesseract poppler` (macOS). Without
 them, image-only PDFs are flagged Manual Review instead of being OCR'd.
 
-## Using it for real
+## 🚀 Using it for real
 
 1. Put the invoice PDFs in `invoices/` (subfolders such as `invoices/2026-09/`
    are fine). Only the **file name** carries meaning:
@@ -90,7 +90,7 @@ The **🙈 Privacy** switch in the header masks names and amounts for screen
 sharing. A backup of the database is taken once a day (and before anything
 destructive); restore from the Validate tab.
 
-## Privacy and security
+## 🔒 Privacy and security
 
 The app is meant for confidential data, so it is built to keep it on your
 machine:
@@ -115,7 +115,7 @@ machine:
   chmod +x .git/hooks/pre-commit
   ```
 
-## How it works
+## ⚙️ How it works
 
 ```
 invoices/*.pdf ──► pipeline/extraction.py ──► pipeline/validate.py ──► data/app.db ──► app.py (Streamlit)
@@ -132,7 +132,7 @@ and amounts in both `4,000.00` and `4 000,00` styles. Contractor names are
 matched ignoring accents, case and word order, stored as in the file name
 and displayed surname-first.
 
-## Tests
+## 🧪 Tests
 
 ```bash
 source venv/bin/activate
@@ -149,7 +149,7 @@ cases, the on-call calculator and sheet reader, the ECB client, naming,
 backups, authentication, privacy mode and the Streamlit UI itself (driven
 through `streamlit.testing`).
 
-## Project layout
+## 🗂️ Project layout
 
 ```
 app.py              Streamlit UI (tabs, login, privacy mode)
